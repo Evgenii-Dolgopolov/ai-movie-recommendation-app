@@ -46,7 +46,7 @@ function App() {
             value={text1}
             onChange={handleChange1}
             rows="6"
-            cols="50"
+            cols="40"
           />
         </div>
 
@@ -59,7 +59,7 @@ function App() {
             value={text2}
             onChange={handleChange2}
             rows="6"
-            cols="50"
+            cols="40"
           />
         </div>
 
@@ -72,13 +72,15 @@ function App() {
             value={text3}
             onChange={handleChange3}
             rows="6"
-            cols="50"
+            cols="40"
           />
         </div>
 
-        <button className="submit-btn" type="submit">
-          Submit
-        </button>
+        <div className="questions-container">
+          <button className="submit-btn" type="submit">
+            Let’s Go
+          </button>
+        </div>
       </form>
     </>
   )
