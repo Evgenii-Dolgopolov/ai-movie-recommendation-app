@@ -1,5 +1,7 @@
 
 
+const openAiApiKey = import.meta.env.VITE_OPENAI_API_KEY
+
 function App() {
 
 
