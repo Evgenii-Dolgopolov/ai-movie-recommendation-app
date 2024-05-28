@@ -45,8 +45,8 @@ function App() {
             id="textarea"
             value={text1}
             onChange={handleChange1}
-            rows="6"
-            cols="40"
+            rows="4"
+            cols="50"
           />
         </div>
 
@@ -58,8 +58,8 @@ function App() {
             id="textarea2"
             value={text2}
             onChange={handleChange2}
-            rows="6"
-            cols="40"
+            rows="4"
+            cols="50"
           />
         </div>
 
@@ -71,8 +71,8 @@ function App() {
             id="textarea3"
             value={text3}
             onChange={handleChange3}
-            rows="6"
-            cols="40"
+            rows="4"
+            cols="50"
           />
         </div>
 
