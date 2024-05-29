@@ -5,7 +5,8 @@ function App() {
   const [questions, setQuestions] = React.useState([
     {
       id: 1,
-      placeholder: "The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets",
+      placeholder:
+        "The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets",
       question: "What is your favorite movie and why?",
       userAnswer: "",
       embedding: [],
@@ -41,17 +42,21 @@ function App() {
   }
 
   async function main(questions) {
-    const embeddings = await Promise.all(
-      questions.map(async question => {
-        const response = await openai.embeddings.create({
-          model: "text-embedding-ada-002",
-          input: question.userAnswer,
-          encoding_format: "float",
+    try {
+      const embeddings = await Promise.all(
+        questions.map(async question => {
+          const response = await openai.embeddings.create({
+            model: "text-embedding-ada-002",
+            input: question.userAnswer,
+            encoding_format: "float",
+          })
+          return response.data[0]
         })
-        return response.data[0]
-      })
-    )
-    console.log(embeddings)
+      )
+      console.log('Embeddings:', embeddings)
+    } catch (error) {
+      console.error("Error fetching embeddings:", error)
+    }
   }
 
   return (
@@ -65,7 +70,7 @@ function App() {
         <h1 className="header-title">PopChoice</h1>
       </header>
 
-      <form onSubmit={() => handleSubmit}>
+      <form onSubmit={handleSubmit}>
         {questions.map(question => (
           <div className="questions-container" key={question.id}>
             <label htmlFor={`textarea${question.id}`}>
