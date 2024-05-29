@@ -1,7 +1,5 @@
 import React from "react"
-import OpenAI from "openai"
-
-const openAiApiKey = import.meta.env.VITE_OPENAI_API_KEY
+import openai from "./api.js"
 
 function App() {
   const [text1, setText1] = React.useState("")
@@ -27,6 +25,17 @@ function App() {
     console.log("Submitted text 3:", text3)
   }
 
+  async function main() {
+    const embedding = await openai.embeddings.create({
+      model: "text-embedding-ada-002",
+      input: "The quick brown fox jumped over the lazy dog",
+      encoding_format: "float",
+    })
+
+    console.log(embedding)
+  }
+  main()
+
   return (
     <>
       <header>
@@ -42,6 +51,8 @@ function App() {
         <div className="questions-container">
           <label htmlFor="textarea">What is your favorite movie and why?</label>
           <textarea
+            placeholder="The Shawshank Redemption
+            Because it taught me to never give up hope no matter how hard life gets"
             id="textarea"
             value={text1}
             onChange={handleChange1}
@@ -55,6 +66,7 @@ function App() {
             Are you in the mood for something new or a classic?
           </label>
           <textarea
+            placeholder="I want to watch movies that were released after 1990"
             id="textarea2"
             value={text2}
             onChange={handleChange2}
@@ -68,6 +80,7 @@ function App() {
             Do you wanna have fun or do you want something serious?
           </label>
           <textarea
+            placeholder="I want to watch something stupid and fun"
             id="textarea3"
             value={text3}
             onChange={handleChange3}
