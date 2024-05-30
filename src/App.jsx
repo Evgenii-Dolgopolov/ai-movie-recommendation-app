@@ -1,5 +1,5 @@
 import React from "react"
-import openai from "./api.js"
+import { openai, supabase } from "./api.js"
 
 function App() {
   const [questions, setQuestions] = React.useState([

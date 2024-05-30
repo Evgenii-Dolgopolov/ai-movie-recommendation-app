@@ -7,11 +7,11 @@ if (!import.meta.env.VITE_OPENAI_API_KEY) {
 }
 
 // OpenAI config
-const openai = new OpenAI({
+export const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true,
 })
-export default openai
+
 
 // Supabase
 const privateKey = import.meta.env.VITE_SUPABASE_API_KEY
