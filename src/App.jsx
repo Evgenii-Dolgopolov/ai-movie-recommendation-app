@@ -53,7 +53,11 @@ function App() {
           return response.data[0]
         })
       )
-      console.log('Embeddings:', embeddings)
+      const updatedQuestions = questions.map((question, index) => ({
+        ...question,
+        embedding: embeddings[index],
+      }))
+      setQuestions(updatedQuestions)
     } catch (error) {
       console.error("Error fetching embeddings:", error)
     }
