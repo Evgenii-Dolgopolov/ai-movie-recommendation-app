@@ -49,7 +49,11 @@ function App() {
             input: question.userAnswer,
             encoding_format: "float",
           })
-          return response.data[0]
+          const embedding = response.data[0].embedding || response.data[0]
+          if (!Array.isArray(embedding) || embedding.length !== 1536) {
+            throw new Error("Invalid embedding data")
+          }
+          return embedding
         })
       )
       const updatedQuestions = questions.map((question, index) => ({
@@ -57,8 +61,38 @@ function App() {
         embedding: embeddings[index],
       }))
       setQuestions(updatedQuestions)
+      databasePost(updatedQuestions)
     } catch (error) {
       console.error("Error fetching embeddings:", error)
+    }
+  }
+
+  async function databasePost(updatedQuestions) {
+    const { error: deleteError } = await supabase
+      .from("documents")
+      .delete()
+      .neq("id", 0) // This deletes all rows. Adjust the condition if needed.
+
+    if (deleteError) {
+      console.error("Error deleting data:", deleteError)
+      return // Exit if there's an error in deleting
+    }
+    // Accept updatedQuestions as a parameter
+    const formattedData = updatedQuestions.map(question => ({
+      id: question.id,
+      placeholder: question.placeholder,
+      question: question.question,
+      user_answer: question.userAnswer,
+      embedding: `[${question.embedding.join(",")}]`, // Ensure embedding is serialized correctly
+    }))
+
+    const { data, error } = await supabase
+      .from("documents")
+      .insert(formattedData)
+    if (error) {
+      console.error("Error inserting data:", error)
+    } else {
+      console.log("Data inserted successfully:", data)
     }
   }
 
