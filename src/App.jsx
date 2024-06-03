@@ -1,5 +1,6 @@
 import React from "react"
 import { openai, supabase } from "./api.js"
+import movies from "./movies.js"
 
 function App() {
   const [questions, setQuestions] = React.useState([
