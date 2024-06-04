@@ -148,7 +148,9 @@ function App() {
         />
         <h1 className="header-title">PopChoice</h1>
       </header>
-      {!hasRecommendation ? (
+      {isLoading ? (
+        <div className="loader">Creating a recommendation...</div>
+      ) : !hasRecommendation ? (
         <form onSubmit={handleSubmit}>
           <div className="questions-container">
             <label htmlFor="favoriteMovie">
@@ -203,9 +205,8 @@ function App() {
           <h4>{output}</h4>
         </div>
       )}
-      {isLoading && <div className="loader">Loading...</div>} {/* Loader */}
     </>
-  )
+  );
 }
 
 export default App
