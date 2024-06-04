@@ -4,20 +4,17 @@ import movies from "./movies.js"
 
 function App() {
   const [userInputs, setUserInputs] = React.useState({
-    question1: "What is your favorite movie and why?",
-    answer1: "",
-    question2: "Are you in the mood for something new or a classic?",
-    answer2: "",
-    question3: "Do you wanna have fun or do you want something serious?",
-    answer3: "",
+    favoriteMovie: "",
+    movieRecency: "",
+    genre: "",
   })
 
   const handleChange = (id, value) => {
     setUserInputs(prevInputs => ({
-        ...prevInputs,
-        [id]: value,
-    }));
-}
+      ...prevInputs,
+      [id]: value,
+    }))
+  }
 
   const handleSubmit = e => {
     e.preventDefault()
@@ -88,7 +85,7 @@ function App() {
   }
 
   async function formatUserInput(userAnswerInputs) {
-    return 
+    return `Favorite movie: ${userAnswerInputs.favoriteMovie}. Recency of release: ${userAnswerInputs.movieRecency}. Genre or mood: ${userAnswerInputs.genre}`
   }
 
   // // Query Supabase and return a semantically matching text chunk
@@ -107,7 +104,7 @@ function App() {
   // const chatMessages = [
   //   {
   //     role: "system",
-  //     content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given two pieces of information - a movie list containing movies to give recommendtions out of and a user preference for a movie. Your main job is to provide a movie recommendation using the provided context. If you are unsure and cannot find the answer in the context, say, "Sorry, I don't have a recommendation." Please do not make up the answer.`,
+  //     content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given two pieces of information - a movie list containing movies to give recommendations out of and a user preference for a movie containing user’s: favorite movie, how much of a classic or a recently released a desired movie is and what a movie genre. Your main job is to provide a movie recommendation using the provided context. If you are unsure and cannot find the answer in the context, say, "Sorry, I don't have a recommendation." Please do not make up the answer.`,
   //   },
   // ]
 
@@ -139,10 +136,9 @@ function App() {
       </header>
 
       <form onSubmit={handleSubmit}>
-
         <div className="questions-container">
           <label htmlFor="question1">
-            {userInputs.question1}
+            What is your favorite movie and why?
           </label>
           <textarea
             placeholder="The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets"
@@ -156,7 +152,7 @@ function App() {
 
         <div className="questions-container">
           <label htmlFor="question2">
-            {userInputs.question2}
+            Are you in the mood for something new or a classic?
           </label>
           <textarea
             placeholder="I want to watch movies that were released after 1990"
@@ -170,7 +166,7 @@ function App() {
 
         <div className="questions-container">
           <label htmlFor="question3">
-            {userInputs.question3}
+            Do you wanna have fun or do you want something serious?
           </label>
           <textarea
             placeholder="I want to watch something stupid and fun"
