@@ -3,42 +3,27 @@ import { openai, supabase } from "./api.js"
 import movies from "./movies.js"
 
 function App() {
-  const [questions, setQuestions] = React.useState([
-    {
-      id: 1,
-      placeholder:
-        "The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets",
-      question: "What is your favorite movie and why?",
-      userAnswer: "",
-      embedding: [],
-    },
-    {
-      id: 2,
-      placeholder: "Are you in the mood for something new or a classic?",
-      question: "Are you in the mood for something new or a classic?",
-      userAnswer: "",
-      embedding: [],
-    },
-    {
-      id: 3,
-      placeholder: "Do you wanna have fun or do you want something serious?",
-      question: "Do you wanna have fun or do you want something serious?",
-      userAnswer: "",
-      embedding: [],
-    },
-  ])
+  const [userInputs, setUserInputs] = React.useState({
+    question1: "What is your favorite movie and why?",
+    answer1: "",
+    question2: "Are you in the mood for something new or a classic?",
+    answer2: "",
+    question3: "Do you wanna have fun or do you want something serious?",
+    answer3: "",
+  })
 
   const handleChange = (id, value) => {
-    setQuestions(prevQuestions =>
-      prevQuestions.map(question =>
-        question.id === id ? { ...question, userAnswer: value } : question
-      )
-    )
-  }
+    setUserInputs(prevInputs => ({
+        ...prevInputs,
+        [id]: value,
+    }));
+}
 
   const handleSubmit = e => {
     e.preventDefault()
-    main(movies)
+    console.log(userInputs)
+
+    // main(movies)
   }
 
   async function main(movieData) {
@@ -73,28 +58,38 @@ function App() {
 
   async function addVectorToDb(movieVectors) {
     try {
-        // Fetch existing records from the database
-        const { data: existingRecords, error: fetchError } = await supabase.from("documents").select("content");
-        if (fetchError) throw fetchError;
+      // Fetch existing records from the database
+      const { data: existingRecords, error: fetchError } = await supabase
+        .from("documents")
+        .select("content")
+      if (fetchError) throw fetchError
 
-        // Get the content of existing records for comparison
-        const existingContents = existingRecords.map(record => record.content);
+      // Get the content of existing records for comparison
+      const existingContents = existingRecords.map(record => record.content)
 
-        // Filter out movie vectors that already exist in the database
-        const newMovieVectors = movieVectors.filter(movieVector => !existingContents.includes(movieVector.content));
+      // Filter out movie vectors that already exist in the database
+      const newMovieVectors = movieVectors.filter(
+        movieVector => !existingContents.includes(movieVector.content)
+      )
 
-        // Insert only new records into the database
-        if (newMovieVectors.length > 0) {
-            const { error: insertError } = await supabase.from("documents").insert(newMovieVectors);
-            if (insertError) throw insertError;
-            console.log("Data inserted to DB successfully");
-        } else {
-            console.log("No new data to insert");
-        }
+      // Insert only new records into the database
+      if (newMovieVectors.length > 0) {
+        const { error: insertError } = await supabase
+          .from("documents")
+          .insert(newMovieVectors)
+        if (insertError) throw insertError
+        console.log("Data inserted to DB successfully")
+      } else {
+        console.log("No new data to insert")
+      }
     } catch (error) {
-        console.error("Error inserting data to DB:", error);
+      console.error("Error inserting data to DB:", error)
     }
-}
+  }
+
+  async function formatUserInput(userAnswerInputs) {
+    return 
+  }
 
   // // Query Supabase and return a semantically matching text chunk
   // async function findNearestMatch(embedding) {
@@ -105,8 +100,7 @@ function App() {
   //     match_threshold: 0.5,
   //     match_count: 1,
   //   })
-  //   // console.log(data[0].content)
-  //   // return data[0].content
+  //   return data[0].content
   // }
 
   // // Use OpenAI to make the response conversational
@@ -145,21 +139,48 @@ function App() {
       </header>
 
       <form onSubmit={handleSubmit}>
-        {questions.map(question => (
-          <div className="questions-container" key={question.id}>
-            <label htmlFor={`textarea${question.id}`}>
-              {question.question}
-            </label>
-            <textarea
-              placeholder={question.placeholder}
-              id={`textarea${question.id}`}
-              value={question.userAnswer}
-              onChange={e => handleChange(question.id, e.target.value)}
-              rows="4"
-              cols="50"
-            />
-          </div>
-        ))}
+
+        <div className="questions-container">
+          <label htmlFor="question1">
+            {userInputs.question1}
+          </label>
+          <textarea
+            placeholder="The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets"
+            id="question1"
+            value={userInputs.answer1}
+            onChange={e => handleChange("answer1", e.target.value)}
+            rows="4"
+            cols="50"
+          />
+        </div>
+
+        <div className="questions-container">
+          <label htmlFor="question2">
+            {userInputs.question2}
+          </label>
+          <textarea
+            placeholder="I want to watch movies that were released after 1990"
+            id="question2"
+            value={userInputs.answer2}
+            onChange={e => handleChange("answer2", e.target.value)}
+            rows="4"
+            cols="50"
+          />
+        </div>
+
+        <div className="questions-container">
+          <label htmlFor="question3">
+            {userInputs.question3}
+          </label>
+          <textarea
+            placeholder="I want to watch something stupid and fun"
+            id="question3"
+            value={userInputs.answer3}
+            onChange={e => handleChange("answer3", e.target.value)}
+            rows="4"
+            cols="50"
+          />
+        </div>
 
         <div className="questions-container">
           <button className="submit-btn" type="submit">
