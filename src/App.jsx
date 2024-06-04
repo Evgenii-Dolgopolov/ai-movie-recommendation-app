@@ -26,6 +26,7 @@ function App() {
     // const postToDb = await addVectorToDb(movieVectors)
     await addVectorToDb(movieVectors)
     const formattedInput = formatUserInput(userInputs)
+    const match = await findNearestMatch(formattedInput)
   }
 
   async function createVector(data) {
@@ -44,7 +45,6 @@ function App() {
           }
         })
       )
-      console.log(dataEmbedding)
       return dataEmbedding
     } catch (error) {
       console.error("Error fetching embeddings:", error)
@@ -87,17 +87,21 @@ function App() {
     return `Favorite movie: ${userAnswerInputs.favoriteMovie}. Recency of release: ${userAnswerInputs.movieRecency}. Genre or mood: ${userAnswerInputs.genre}`
   }
 
-  // // Query Supabase and return a semantically matching text chunk
-  // async function findNearestMatch(embedding) {
-  //   console.log(embedding)
+  async function findNearestMatch(userInput) {
+    const embeddingResponse = await openai.embeddings.create({
+      model: "text-embedding-ada-002",
+      input: userInput,
+    })
+    const embedding = embeddingResponse.data[0].embedding
 
-  //   const { data } = await supabase.rpc("match_documents", {
-  //     query_embedding: embedding,
-  //     match_threshold: 0.5,
-  //     match_count: 1,
-  //   })
-  //   return data[0].content
-  // }
+    // Query Supabase for nearest vector match
+    const { data } = await supabase.rpc("match_documents", {
+      query_embedding: embedding,
+      match_threshold: 0.6,
+      match_count: 1,
+    })
+    return data[0].content
+  }
 
   // // Use OpenAI to make the response conversational
   // const chatMessages = [
