@@ -38,64 +38,114 @@ function App() {
 
   const handleSubmit = e => {
     e.preventDefault()
-    main(questions)
+    main(movies)
   }
 
-  async function main(questions) {
+  async function main(movieData) {
+    const movieVectors = await createVector(movieData)
+    // const postToDb = await addVectorToDb(movieVectors)
+    await addVectorToDb(movieVectors)
+  }
+
+  async function createVector(data) {
     try {
-      const embeddings = await Promise.all(
-        questions.map(async question => {
+      const dataEmbedding = await Promise.all(
+        data.map(async item => {
+          const content = `${item.title}, ${item.releaseYear}, ${item.content}`
           const response = await openai.embeddings.create({
             model: "text-embedding-ada-002",
-            input: question.userAnswer,
+            input: content,
             encoding_format: "float",
           })
-          const embedding = response.data[0].embedding || response.data[0]
-          if (!Array.isArray(embedding) || embedding.length !== 1536) {
-            throw new Error("Invalid embedding data")
+          return {
+            content: content,
+            embedding: response.data[0].embedding,
           }
-          return embedding
         })
       )
-      const updatedQuestions = questions.map((question, index) => ({
-        ...question,
-        embedding: embeddings[index],
-      }))
-      setQuestions(updatedQuestions)
-      databasePost(updatedQuestions)
+      console.log(dataEmbedding)
+      return dataEmbedding
     } catch (error) {
       console.error("Error fetching embeddings:", error)
+      return []
     }
   }
 
-  async function databasePost(updatedQuestions) {
-    const { error: deleteError } = await supabase
-      .from("documents")
-      .delete()
-      .neq("id", 0) // This deletes all rows. Adjust the condition if needed.
-
-    if (deleteError) {
-      console.error("Error deleting data:", deleteError)
-      return // Exit if there's an error in deleting
-    }
-    // Accept updatedQuestions as a parameter
-    const formattedData = updatedQuestions.map(question => ({
-      id: question.id,
-      placeholder: question.placeholder,
-      question: question.question,
-      user_answer: question.userAnswer,
-      embedding: `[${question.embedding.join(",")}]`, // Ensure embedding is serialized correctly
-    }))
-
-    const { data, error } = await supabase
-      .from("documents")
-      .insert(formattedData)
-    if (error) {
-      console.error("Error inserting data:", error)
-    } else {
-      console.log("Data inserted successfully:", data)
+  async function addVectorToDb(movieVectors) {
+    try {
+      const { error } = await supabase.from("documents").insert(movieVectors)
+      if (error) throw error
+      console.log("Data inserted to DB successfully")
+    } catch (error) {
+      console.error("Error inserting data to DB:", error)
     }
   }
+
+  // async function databasePost(updatedQuestions) {
+  //   const { error: deleteError } = await supabase
+  //     .from("documents")
+  //     .delete()
+  //     .neq("id", 0) // This deletes all rows. Adjust the condition if needed.
+
+  //   if (deleteError) {
+  //     console.error("Error deleting data:", deleteError)
+  //     return // Exit if there's an error in deleting
+  //   }
+  //   // Accept updatedQuestions as a parameter
+  //   const formattedData = updatedQuestions.map(question => ({
+  //     id: question.id,
+  //     placeholder: question.placeholder,
+  //     question: question.question,
+  //     user_answer: question.userAnswer,
+  //     embedding: `[${question.embedding.join(",")}]`,
+  //   }))
+
+  //   const { data, error } = await supabase
+  //     .from("documents")
+  //     .insert(formattedData)
+  //   if (error) {
+  //     console.error("Error inserting data:", error)
+  //   } else {
+  //     console.log("Data inserted successfully:", data)
+  //   }
+  // }
+
+  // // Query Supabase and return a semantically matching text chunk
+  // async function findNearestMatch(embedding) {
+  //   console.log(embedding)
+
+  //   const { data } = await supabase.rpc("match_documents", {
+  //     query_embedding: embedding,
+  //     match_threshold: 0.5,
+  //     match_count: 1,
+  //   })
+  //   // console.log(data[0].content)
+  //   // return data[0].content
+  // }
+
+  // // Use OpenAI to make the response conversational
+  // const chatMessages = [
+  //   {
+  //     role: "system",
+  //     content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given two pieces of information - a movie list containing movies to give recommendtions out of and a user preference for a movie. Your main job is to provide a movie recommendation using the provided context. If you are unsure and cannot find the answer in the context, say, "Sorry, I don't have a recommendation." Please do not make up the answer.`,
+  //   },
+  // ]
+
+  // async function getChatCompletion(movies, embedding) {
+  //   chatMessages.push({
+  //     role: "user",
+  //     content: `Movie list: ${movies} Question: ${embedding}`,
+  //   })
+
+  //   const response = await openai.chat.completions.create({
+  //     model: "gpt-4-turbo",
+  //     messages: chatMessages,
+  //     temperature: 0.5,
+  //     frequency_penalty: 0.5,
+  //   })
+
+  //   console.log(response.choices[0].message.content)
+  // }
 
   return (
     <>
