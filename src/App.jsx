@@ -73,42 +73,28 @@ function App() {
 
   async function addVectorToDb(movieVectors) {
     try {
-      const { error } = await supabase.from("documents").insert(movieVectors)
-      if (error) throw error
-      console.log("Data inserted to DB successfully")
+        // Fetch existing records from the database
+        const { data: existingRecords, error: fetchError } = await supabase.from("documents").select("content");
+        if (fetchError) throw fetchError;
+
+        // Get the content of existing records for comparison
+        const existingContents = existingRecords.map(record => record.content);
+
+        // Filter out movie vectors that already exist in the database
+        const newMovieVectors = movieVectors.filter(movieVector => !existingContents.includes(movieVector.content));
+
+        // Insert only new records into the database
+        if (newMovieVectors.length > 0) {
+            const { error: insertError } = await supabase.from("documents").insert(newMovieVectors);
+            if (insertError) throw insertError;
+            console.log("Data inserted to DB successfully");
+        } else {
+            console.log("No new data to insert");
+        }
     } catch (error) {
-      console.error("Error inserting data to DB:", error)
+        console.error("Error inserting data to DB:", error);
     }
-  }
-
-  // async function databasePost(updatedQuestions) {
-  //   const { error: deleteError } = await supabase
-  //     .from("documents")
-  //     .delete()
-  //     .neq("id", 0) // This deletes all rows. Adjust the condition if needed.
-
-  //   if (deleteError) {
-  //     console.error("Error deleting data:", deleteError)
-  //     return // Exit if there's an error in deleting
-  //   }
-  //   // Accept updatedQuestions as a parameter
-  //   const formattedData = updatedQuestions.map(question => ({
-  //     id: question.id,
-  //     placeholder: question.placeholder,
-  //     question: question.question,
-  //     user_answer: question.userAnswer,
-  //     embedding: `[${question.embedding.join(",")}]`,
-  //   }))
-
-  //   const { data, error } = await supabase
-  //     .from("documents")
-  //     .insert(formattedData)
-  //   if (error) {
-  //     console.error("Error inserting data:", error)
-  //   } else {
-  //     console.log("Data inserted successfully:", data)
-  //   }
-  // }
+}
 
   // // Query Supabase and return a semantically matching text chunk
   // async function findNearestMatch(embedding) {
