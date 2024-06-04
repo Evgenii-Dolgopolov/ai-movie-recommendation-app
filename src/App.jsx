@@ -9,6 +9,10 @@ function App() {
     genre: "",
   })
 
+  const [hasRecommendation, setHasRecommendation] = React.useState(false)
+  const [output, setOutput] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
+
   const handleChange = (id, value) => {
     setUserInputs(prevInputs => ({
       ...prevInputs,
@@ -16,17 +20,22 @@ function App() {
     }))
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault()
-    main(movies)
+    setIsLoading(true)  
+    await main(movies)
+    setIsLoading(false)
   }
 
   async function main(movieData) {
     const movieVectors = await createVector(movieData)
-    // const postToDb = await addVectorToDb(movieVectors)
     await addVectorToDb(movieVectors)
     const formattedInput = formatUserInput(userInputs)
-    const match = await findNearestMatch(formattedInput)
+    const embedding = await createEmbedding(formattedInput)
+    const match = await findMatch(embedding)
+    const output = await getChatCompletion(match, formattedInput)
+    setOutput(output)
+    setHasRecommendation(true)
   }
 
   async function createVector(data) {
@@ -87,45 +96,47 @@ function App() {
     return `Favorite movie: ${userAnswerInputs.favoriteMovie}. Recency of release: ${userAnswerInputs.movieRecency}. Genre or mood: ${userAnswerInputs.genre}`
   }
 
-  async function findNearestMatch(userInput) {
+  async function createEmbedding(userInput) {
     const embeddingResponse = await openai.embeddings.create({
       model: "text-embedding-ada-002",
       input: userInput,
     })
-    const embedding = embeddingResponse.data[0].embedding
+    return embeddingResponse.data[0].embedding
+  }
 
-    // Query Supabase for nearest vector match
+  // Query Supabase for nearest vector match
+  async function findMatch(embedding) {
     const { data } = await supabase.rpc("match_documents", {
       query_embedding: embedding,
-      match_threshold: 0.6,
+      match_threshold: 0.5,
       match_count: 1,
     })
     return data[0].content
   }
 
-  // // Use OpenAI to make the response conversational
-  // const chatMessages = [
-  //   {
-  //     role: "system",
-  //     content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given two pieces of information - a movie list containing movies to give recommendations out of and a user preference for a movie containing user’s: favorite movie, how much of a classic or a recently released a desired movie is and what a movie genre. Your main job is to provide a movie recommendation using the provided context. If you are unsure and cannot find the answer in the context, say, "Sorry, I don't have a recommendation." Please do not make up the answer.`,
-  //   },
-  // ]
+  // Use OpenAI to make the response conversational
+  const chatMessages = [
+    {
+      role: "system",
+      content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given two pieces of information - a movie list containing movies to give recommendations out of and my preference for a movie containing: favorite movie, how much of a classic or a recently released a movie is and what a movie genre. Your main job is to provide me a movie recommendation using the provided context. If there is no good match from the provided movie list, then come up with a recommendation on your own. Don't include the input given to you in your response and don't refer to the list of movies provided. Omit periods and commas inside the quotation marks when providing movie titles, but make sure that all the other punctuation in your response is grammatically correct.`,
+    },
+  ]
 
-  // async function getChatCompletion(movies, embedding) {
-  //   chatMessages.push({
-  //     role: "user",
-  //     content: `Movie list: ${movies} Question: ${embedding}`,
-  //   })
+  async function getChatCompletion(moviesList, userPreference) {
+    chatMessages.push({
+      role: "user",
+      content: `Movie list: ${moviesList} User preference: ${userPreference}`,
+    })
 
-  //   const response = await openai.chat.completions.create({
-  //     model: "gpt-4-turbo",
-  //     messages: chatMessages,
-  //     temperature: 0.5,
-  //     frequency_penalty: 0.5,
-  //   })
+    const response = await openai.chat.completions.create({
+      model: "gpt-4-turbo",
+      messages: chatMessages,
+      temperature: 0.5,
+      frequency_penalty: 0.5,
+    })
 
-  //   console.log(response.choices[0].message.content)
-  // }
+    return response.choices[0].message.content
+  }
 
   return (
     <>
@@ -137,56 +148,62 @@ function App() {
         />
         <h1 className="header-title">PopChoice</h1>
       </header>
+      {!hasRecommendation ? (
+        <form onSubmit={handleSubmit}>
+          <div className="questions-container">
+            <label htmlFor="favoriteMovie">
+              What is your favorite movie and why?
+            </label>
+            <textarea
+              placeholder="The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets"
+              id="favoriteMovie"
+              value={userInputs.favoriteMovie}
+              onChange={e => handleChange("favoriteMovie", e.target.value)}
+              rows="4"
+              cols="50"
+            />
+          </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="questions-container">
-          <label htmlFor="favoriteMovie">
-            What is your favorite movie and why?
-          </label>
-          <textarea
-            placeholder="The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets"
-            id="favoriteMovie"
-            value={userInputs.favoriteMovie}
-            onChange={e => handleChange("favoriteMovie", e.target.value)}
-            rows="4"
-            cols="50"
-          />
-        </div>
+          <div className="questions-container">
+            <label htmlFor="movieRecency">
+              Are you in the mood for something new or a classic?
+            </label>
+            <textarea
+              placeholder="Are you in the mood for something new or a classic?"
+              id="movieRecency"
+              value={userInputs.movieRecency}
+              onChange={e => handleChange("movieRecency", e.target.value)}
+              rows="4"
+              cols="50"
+            />
+          </div>
 
-        <div className="questions-container">
-          <label htmlFor="movieRecency">
-            Are you in the mood for something new or a classic?
-          </label>
-          <textarea
-            placeholder="Are you in the mood for something new or a classic?"
-            id="movieRecency"
-            value={userInputs.movieRecency}
-            onChange={e => handleChange("movieRecency", e.target.value)}
-            rows="4"
-            cols="50"
-          />
-        </div>
+          <div className="questions-container">
+            <label htmlFor="genre">
+              Do you wanna have fun or do you want something serious?
+            </label>
+            <textarea
+              placeholder="Do you wanna have fun or do you want something serious?"
+              id="genre"
+              value={userInputs.genre}
+              onChange={e => handleChange("genre", e.target.value)}
+              rows="4"
+              cols="50"
+            />
+          </div>
 
+          <div className="questions-container">
+            <button className="submit-btn" type="submit">
+              Let's Go
+            </button>
+          </div>
+        </form>
+      ) : (
         <div className="questions-container">
-          <label htmlFor="genre">
-            Do you wanna have fun or do you want something serious?
-          </label>
-          <textarea
-            placeholder="Do you wanna have fun or do you want something serious?"
-            id="genre"
-            value={userInputs.genre}
-            onChange={e => handleChange("genre", e.target.value)}
-            rows="4"
-            cols="50"
-          />
+          <h4>{output}</h4>
         </div>
-
-        <div className="questions-container">
-          <button className="submit-btn" type="submit">
-            Let's Go
-          </button>
-        </div>
-      </form>
+      )}
+      {isLoading && <div className="loader">Loading...</div>} {/* Loader */}
     </>
   )
 }
