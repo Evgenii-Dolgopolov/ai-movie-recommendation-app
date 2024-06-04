@@ -18,15 +18,14 @@ function App() {
 
   const handleSubmit = e => {
     e.preventDefault()
-    console.log(userInputs)
-
-    // main(movies)
+    main(movies)
   }
 
   async function main(movieData) {
     const movieVectors = await createVector(movieData)
     // const postToDb = await addVectorToDb(movieVectors)
     await addVectorToDb(movieVectors)
+    const formattedInput = formatUserInput(userInputs)
   }
 
   async function createVector(data) {
@@ -84,7 +83,7 @@ function App() {
     }
   }
 
-  async function formatUserInput(userAnswerInputs) {
+  function formatUserInput(userAnswerInputs) {
     return `Favorite movie: ${userAnswerInputs.favoriteMovie}. Recency of release: ${userAnswerInputs.movieRecency}. Genre or mood: ${userAnswerInputs.genre}`
   }
 
@@ -137,42 +136,42 @@ function App() {
 
       <form onSubmit={handleSubmit}>
         <div className="questions-container">
-          <label htmlFor="question1">
+          <label htmlFor="favoriteMovie">
             What is your favorite movie and why?
           </label>
           <textarea
             placeholder="The Shawshank Redemption. Because it taught me to never give up hope no matter how hard life gets"
-            id="question1"
-            value={userInputs.answer1}
-            onChange={e => handleChange("answer1", e.target.value)}
+            id="favoriteMovie"
+            value={userInputs.favoriteMovie}
+            onChange={e => handleChange("favoriteMovie", e.target.value)}
             rows="4"
             cols="50"
           />
         </div>
 
         <div className="questions-container">
-          <label htmlFor="question2">
+          <label htmlFor="movieRecency">
             Are you in the mood for something new or a classic?
           </label>
           <textarea
-            placeholder="I want to watch movies that were released after 1990"
-            id="question2"
-            value={userInputs.answer2}
-            onChange={e => handleChange("answer2", e.target.value)}
+            placeholder="Are you in the mood for something new or a classic?"
+            id="movieRecency"
+            value={userInputs.movieRecency}
+            onChange={e => handleChange("movieRecency", e.target.value)}
             rows="4"
             cols="50"
           />
         </div>
 
         <div className="questions-container">
-          <label htmlFor="question3">
+          <label htmlFor="genre">
             Do you wanna have fun or do you want something serious?
           </label>
           <textarea
-            placeholder="I want to watch something stupid and fun"
-            id="question3"
-            value={userInputs.answer3}
-            onChange={e => handleChange("answer3", e.target.value)}
+            placeholder="Do you wanna have fun or do you want something serious?"
+            id="genre"
+            value={userInputs.genre}
+            onChange={e => handleChange("genre", e.target.value)}
             rows="4"
             cols="50"
           />
