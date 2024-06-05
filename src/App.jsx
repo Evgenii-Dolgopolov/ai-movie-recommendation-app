@@ -3,15 +3,14 @@ import { openai, supabase } from "./api.js"
 import movies from "./movies.js"
 
 function App() {
+  const [hasRecommendation, setHasRecommendation] = React.useState(false)
+  const [output, setOutput] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
   const [userInputs, setUserInputs] = React.useState({
     favoriteMovie: "",
     movieRecency: "",
     genre: "",
   })
-
-  const [hasRecommendation, setHasRecommendation] = React.useState(false)
-  const [output, setOutput] = React.useState("")
-  const [isLoading, setIsLoading] = React.useState(false)
 
   const handleChange = (id, value) => {
     setUserInputs(prevInputs => ({
@@ -22,7 +21,7 @@ function App() {
 
   const handleSubmit = async e => {
     e.preventDefault()
-    setIsLoading(true)  
+    setIsLoading(true)
     await main(movies)
     setIsLoading(false)
   }
@@ -118,10 +117,11 @@ function App() {
   const chatMessages = [
     {
       role: "system",
-      content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given two pieces of information - a movie list containing movies to give recommendations out of and my preference for a movie containing: favorite movie, how much of a classic or a recently released a movie is and what a movie genre. Your main job is to provide me a movie recommendation using the provided context. If there is no good match from the provided movie list, then come up with a recommendation on your own. Don't include the input given to you in your response and don't refer to the list of movies provided. Omit periods and commas inside the quotation marks when providing movie titles, but make sure that all the other punctuation in your response is grammatically correct.`,
+      content: `You are an enthusiastic movie expert who loves recommending movies to people. You will be given a movie list and my preferences: favorite movie, how old or new, genre/mood. Your job is to provide me a movie recommendation using the provided context. If there is no good match from the provided movie list or I provided incomplete or no preference for a movie at all, then come up with a recommendation on your own. Don't include the input given to you in your response and don't refer to the list of movies provided. Have correct punctuation.`,
     },
   ]
 
+  // Conversational response
   async function getChatCompletion(moviesList, userPreference) {
     chatMessages.push({
       role: "user",
@@ -129,7 +129,7 @@ function App() {
     })
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
+      model: "gpt-4o",
       messages: chatMessages,
       temperature: 0.5,
       frequency_penalty: 0.5,
@@ -195,7 +195,7 @@ function App() {
           </div>
 
           <div className="container">
-            <button className="submit-btn" type="submit">
+            <button className="btn" type="submit">
               Let's Go
             </button>
           </div>
@@ -203,10 +203,16 @@ function App() {
       ) : (
         <div className="container">
           <h4>{output}</h4>
+          <button
+            className="btn"
+            onClick={() => setHasRecommendation(false)}
+            type="button">
+            Go Again
+          </button>
         </div>
       )}
     </>
-  );
+  )
 }
 
 export default App
