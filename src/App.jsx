@@ -3,14 +3,16 @@ import { openai, supabase } from "./api.js"
 import movies from "./movies.js"
 
 function App() {
-  const [hasRecommendation, setHasRecommendation] = React.useState(false)
-  const [output, setOutput] = React.useState("")
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [userInputs, setUserInputs] = React.useState({
+  const initialUserInputs = {
     favoriteMovie: "",
     movieRecency: "",
     genre: "",
-  })
+  }
+
+  const [userInputs, setUserInputs] = React.useState(initialUserInputs)
+  const [output, setOutput] = React.useState("")
+  const [hasRecommendation, setHasRecommendation] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
 
   const handleChange = (id, value) => {
     setUserInputs(prevInputs => ({
@@ -28,7 +30,7 @@ function App() {
 
   async function main(movieData) {
     const movieVectors = await createVector(movieData)
-    await addVectorToDb(movieVectors)
+    await addVectorsToDb(movieVectors)
     const formattedInput = formatUserInput(userInputs)
     const embedding = await createEmbedding(formattedInput)
     const match = await findMatch(embedding)
@@ -37,6 +39,7 @@ function App() {
     setHasRecommendation(true)
   }
 
+  // Create embeddings from the movies list
   async function createVector(data) {
     try {
       const dataEmbedding = await Promise.all(
@@ -60,7 +63,8 @@ function App() {
     }
   }
 
-  async function addVectorToDb(movieVectors) {
+  // Add movies list embeddings to Supabase db
+  async function addVectorsToDb(movieVectors) {
     try {
       // Fetch existing records from the database
       const { data: existingRecords, error: fetchError } = await supabase
@@ -108,7 +112,7 @@ function App() {
     const { data } = await supabase.rpc("match_documents", {
       query_embedding: embedding,
       match_threshold: 0.5,
-      match_count: 1,
+      match_count: 1, // output single match
     })
     return data[0].content
   }
@@ -121,7 +125,6 @@ function App() {
     },
   ]
 
-  // Conversational response
   async function getChatCompletion(moviesList, userPreference) {
     chatMessages.push({
       role: "user",
@@ -205,7 +208,10 @@ function App() {
           <h4>{output}</h4>
           <button
             className="btn"
-            onClick={() => setHasRecommendation(false)}
+            onClick={() => {
+              setHasRecommendation(false)
+              setUserInputs(initialUserInputs)
+            }}
             type="button">
             Go Again
           </button>
