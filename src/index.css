@@ -36,7 +36,7 @@ header {
   padding-bottom: 0.5em;
 }
 
-.questions-container {
+.container {
   margin: auto;
   display: flex;
   flex-direction: column;
@@ -46,12 +46,12 @@ header {
   gap: 0.675em;
 }
 
-.questions-container > label {
+.container > label {
   font-size: 1rem;
   font-weight: 400;
 }
 
-.questions-container > textarea {
+.container > textarea {
   background-color: #3B4877;
   border: none;
   border-radius: 10px;

@@ -152,7 +152,7 @@ function App() {
         <div className="loader">Creating a recommendation...</div>
       ) : !hasRecommendation ? (
         <form onSubmit={handleSubmit}>
-          <div className="questions-container">
+          <div className="container">
             <label htmlFor="favoriteMovie">
               What is your favorite movie and why?
             </label>
@@ -166,12 +166,12 @@ function App() {
             />
           </div>
 
-          <div className="questions-container">
+          <div className="container">
             <label htmlFor="movieRecency">
               Are you in the mood for something new or a classic?
             </label>
             <textarea
-              placeholder="Are you in the mood for something new or a classic?"
+              placeholder="I want to watch movies that were released after 1990"
               id="movieRecency"
               value={userInputs.movieRecency}
               onChange={e => handleChange("movieRecency", e.target.value)}
@@ -180,12 +180,12 @@ function App() {
             />
           </div>
 
-          <div className="questions-container">
+          <div className="container">
             <label htmlFor="genre">
               Do you wanna have fun or do you want something serious?
             </label>
             <textarea
-              placeholder="Do you wanna have fun or do you want something serious?"
+              placeholder="I want to watch something stupid and fun"
               id="genre"
               value={userInputs.genre}
               onChange={e => handleChange("genre", e.target.value)}
@@ -194,14 +194,14 @@ function App() {
             />
           </div>
 
-          <div className="questions-container">
+          <div className="container">
             <button className="submit-btn" type="submit">
               Let's Go
             </button>
           </div>
         </form>
       ) : (
-        <div className="questions-container">
+        <div className="container">
           <h4>{output}</h4>
         </div>
       )}
