@@ -146,7 +146,7 @@ function App() {
       <header>
         <img
           className="header-logo"
-          src="./public/assets/logo.png"
+          src="/assets/logo.png"
           alt="movie app logo"
         />
         <h1 className="header-title">PopChoice</h1>
