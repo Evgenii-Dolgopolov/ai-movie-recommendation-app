@@ -1,24 +1,3 @@
-This app is an AI-powered movie recommendation chatbot designed to save users from the endless scrolling of movie trailers and the frustration of spending 20-30 minutes just to pick a movie. The application leverages modern technologies to provide a seamless and intelligent movie-picking experience.
-
-Frontend
-Framework: React
-Purpose: Provides dynamic rendering and a user-friendly interface, making the user interaction smooth and engaging.
-Backend
-API: OpenAI’s Vector Embedding API
-Database: Supabase Vector Database
-How It Works
-User Input: Users input their movie preferences through a series of questions.
-Embedding Generation: The app translates the user input into embeddings using OpenAI's vector embedding API. This process ensures a deep understanding of user preferences beyond simple keyword matching.
-Cross-Reference: These user embeddings are then cross-referenced with a static list of pre-stored movie vectors in the Supabase vector database.
-Similarity Query: The app performs a query to find the movie with the highest similarity score to the user's preferences.
-Recommendation: The app uses OpenAI’s chatbot completion model to add a conversational touch to the output, providing a personalized and engaging movie recommendation.
-MVP Details
-Static List of Movies: Currently, the app uses a static list of movies that are converted into vectors for initial cross-referencing. This is a minimal viable product (MVP) approach aimed at demonstrating the core functionality.
-Key Features
-Accurate Recommendations: By using vector embeddings, the app ensures high accuracy in understanding user preferences and matching them with the best movie choices.
-Conversational Output: The integration of OpenAI's chatbot model ensures that the recommendation feels like a natural conversation, enhancing user satisfaction.
-Efficient Movie Picking: The app dramatically reduces the time users spend picking a movie, making the process quick and enjoyable.
-
 The Movie Recommendation AI Chatbot is designed to eliminate the frustration of spending 20-30 minutes scrolling through trailers just to pick a movie. Inspired by this common struggle, the app leverages cutting-edge technology to provide seamless and intelligent movie recommendations.
 
 On the frontend, the app uses React to create a dynamic and user-friendly interface that ensures a smooth and engaging user experience. The backend harnesses the power of OpenAI’s vector embedding API, which enables the app to understand user preferences with remarkable accuracy, far beyond the capabilities of simple keyword matching.
